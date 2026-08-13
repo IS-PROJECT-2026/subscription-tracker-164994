@@ -9,8 +9,85 @@ body {
     color: #222;
 }
 
-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
+.app {
+    min-height: 100vh;
+}
+
+.topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #dddddd;
+    padding: 20px 32px;
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.brand p {
+    margin: 5px 0 0;
+    color: #666666;
+}
+
+.app-layout {
+    display: flex;
+    min-height: calc(100vh - 89px);
+}
+
+.sidebar {
+    width: 220px;
+    background: #ffffff;
+    border-right: 1px solid #dddddd;
+    padding: 24px 16px;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 14px;
+    border-radius: 6px;
+    color: #333333;
+    text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: #eeeeee;
+}
+
+.main-content {
+    flex: 1;
+    padding: 32px;
+}
+
+.page-header {
+    margin-bottom: 32px;
+}
+
+.page-header h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.page-header p {
+    margin: 0;
+    color: #666666;
+}
+
+.section-heading h3 {
+    margin: 0 0 16px;
+}
+
+.subscription-placeholder {
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #666666;
 }
