@@ -25,3 +25,26 @@ navigationLinks.forEach((link) => {
 });
 
 console.log("SubTrack initialized.");
+
+const subscriptionForm = document.getElementById("subscription-form");
+
+if (subscriptionForm) {
+    subscriptionForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(subscriptionForm);
+
+        const subscription = createSubscription({
+            name: formData.get("name"),
+            category: formData.get("category"),
+            price: formData.get("price"),
+            billingCycle: formData.get("billingCycle"),
+            nextPaymentDate: formData.get("nextPaymentDate"),
+            status: formData.get("status")
+        });
+
+        console.log("New subscription:", subscription);
+
+        subscriptionForm.reset();
+    });
+}
