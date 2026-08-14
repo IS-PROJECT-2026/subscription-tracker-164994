@@ -266,10 +266,12 @@ body {
 .subscription-card-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
     margin-top: 16px;
 }
 
 .edit-subscription-button,
+.delete-subscription-button,
 .secondary-button {
     border: 1px solid #d4d4d8;
     border-radius: 8px;
@@ -284,6 +286,15 @@ body {
 .edit-subscription-button:hover,
 .secondary-button:hover {
     background: #f4f4f5;
+}
+
+.delete-subscription-button {
+    color: #b91c1c;
+}
+
+.delete-subscription-button:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
 }
 
 /* Responsive dashboard layout */
