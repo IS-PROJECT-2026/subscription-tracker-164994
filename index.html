@@ -29,15 +29,15 @@
 
             <aside class="sidebar">
                 <nav aria-label="Main navigation">
-                    <a href="#" class="nav-link active">
+                    <a href="#dashboard" class="nav-link active" data-section="dashboard">
                         Dashboard
                     </a>
 
-                    <a href="#" class="nav-link">
+                    <a href="#subscriptions" class="nav-link" data-section="subscriptions">
                         Subscriptions
                     </a>
 
-                    <a href="#" class="nav-link">
+                    <a href="#analytics" class="nav-link" data-section="analytics">
                         Analytics
                     </a>
                 </nav>
@@ -45,23 +45,49 @@
 
             <main class="main-content">
 
-                <section class="page-header">
-                    <h2>Dashboard</h2>
-                    <p>Keep track of your recurring subscriptions.</p>
+                <section id="dashboard" class="page-section">
+                    <section class="page-header">
+                        <h2>Dashboard</h2>
+                        <p>Keep track of your recurring subscriptions.</p>
+                    </section>
+
+                    <section class="dashboard-content">
+                        <div class="section-heading">
+                            <h3>Your Subscriptions</h3>
+                        </div>
+
+                        <div class="subscription-placeholder">
+                            <p>
+                                Your subscriptions will appear here.
+                            </p>
+                        </div>
+                    </section>
                 </section>
 
-                <section class="dashboard-content">
-
-                    <div class="section-heading">
-                        <h3>Your Subscriptions</h3>
-                    </div>
+                <section id="subscriptions" class="page-section hidden">
+                    <section class="page-header">
+                        <h2>Subscriptions</h2>
+                        <p>View and manage your active subscriptions.</p>
+                    </section>
 
                     <div class="subscription-placeholder">
                         <p>
-                            Your subscriptions will appear here.
+                            Your subscription list will appear here.
                         </p>
                     </div>
+                </section>
 
+                <section id="analytics" class="page-section hidden">
+                    <section class="page-header">
+                        <h2>Analytics</h2>
+                        <p>View your subscription spending insights.</p>
+                    </section>
+
+                    <div class="subscription-placeholder">
+                        <p>
+                            Your analytics will appear here.
+                        </p>
+                    </div>
                 </section>
 
             </main>
