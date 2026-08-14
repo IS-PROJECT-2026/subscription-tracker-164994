@@ -82,7 +82,27 @@ function displaySubscriptions() {
 
     subscriptionGrid.innerHTML = "";
 
-    subscriptions.forEach((subscription) => {
+    const filteredSubscriptions =
+        subscriptions.filter((subscription) =>
+            subscription.name
+                .toLowerCase()
+                .includes(subscriptionSearchQuery.toLowerCase())
+        );
+
+    if (filteredSubscriptions.length === 0) {
+        const emptyMessage =
+            document.createElement("p");
+        emptyMessage.className =
+            "subscription-search-empty";
+        emptyMessage.textContent =
+            subscriptionSearchQuery
+                ? `No subscriptions found for "${subscriptionSearchQuery}".`
+                : "No subscriptions added yet.";
+        subscriptionGrid.appendChild(emptyMessage);
+        return;
+    }
+
+    filteredSubscriptions.forEach((subscription) => {
         const card = document.createElement("article");
 
         card.className = "subscription-card";
@@ -168,9 +188,23 @@ function displaySubscriptions() {
 
 const subscriptions = [];
 let editingSubscriptionId = null;
+let subscriptionSearchQuery = "";
 
 const subscriptionForm = document.getElementById("subscription-form");
+const subscriptionSearchInput =
+    document.getElementById("subscription-search-input");
 const cancelEditButton = document.getElementById("cancel-edit-button");
+
+if (subscriptionSearchInput) {
+    subscriptionSearchInput.addEventListener(
+        "input",
+        (event) => {
+            subscriptionSearchQuery =
+                event.target.value.trim();
+            displaySubscriptions();
+        }
+    );
+}
 
 function startEditingSubscription(subscriptionId) {
     const subscription = subscriptions.find(

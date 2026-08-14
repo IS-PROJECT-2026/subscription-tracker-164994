@@ -263,6 +263,39 @@ body {
     }
 }
 
+.subscription-search {
+    margin-bottom: 24px;
+}
+
+.subscription-search label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.subscription-search input {
+    width: 100%;
+    max-width: 480px;
+    padding: 11px 14px;
+    border: 1px solid #d4d4d8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #18181b;
+    font-size: 14px;
+}
+
+.subscription-search input:focus {
+    outline: none;
+    border-color: #71717a;
+}
+
+.subscription-search-empty {
+    padding: 24px;
+    text-align: center;
+    color: #71717a;
+}
+
 .subscription-card-actions {
     display: flex;
     justify-content: flex-end;
