@@ -262,3 +262,69 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Responsive dashboard layout */
+
+@media (max-width: 900px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+    }
+
+    .main-content {
+        width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .dashboard-layout {
+        display: block;
+    }
+
+    .sidebar {
+        padding: 16px;
+    }
+
+    .main-content {
+        padding: 20px 16px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .dashboard-header h2 {
+        font-size: 24px;
+    }
+
+    .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 16px 12px;
+    }
+
+    .summary-card {
+        padding: 20px;
+    }
+
+    .subscription-card {
+        padding: 18px;
+    }
+
+    .subscription-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
