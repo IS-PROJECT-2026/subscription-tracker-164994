@@ -296,6 +296,40 @@ body {
     color: #71717a;
 }
 
+.subscription-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.filter-group select {
+    min-width: 170px;
+    padding: 10px 12px;
+    border: 1px solid #d4d4d8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #18181b;
+    font-size: 14px;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #71717a;
+}
+
 .subscription-card-actions {
     display: flex;
     justify-content: flex-end;
