@@ -83,11 +83,36 @@ function displaySubscriptions() {
     subscriptionGrid.innerHTML = "";
 
     const filteredSubscriptions =
-        subscriptions.filter((subscription) =>
-            subscription.name
-                .toLowerCase()
-                .includes(subscriptionSearchQuery.toLowerCase())
-        );
+        subscriptions.filter((subscription) => {
+            const matchesSearch =
+                subscription.name
+                    .toLowerCase()
+                    .includes(
+                        subscriptionSearchQuery.toLowerCase()
+                    );
+
+            const matchesCategory =
+                !subscriptionFilters.category ||
+                subscription.category ===
+                    subscriptionFilters.category;
+
+            const matchesBillingCycle =
+                !subscriptionFilters.billingCycle ||
+                subscription.billingCycle ===
+                    subscriptionFilters.billingCycle;
+
+            const matchesStatus =
+                !subscriptionFilters.status ||
+                subscription.status ===
+                    subscriptionFilters.status;
+
+            return (
+                matchesSearch &&
+                matchesCategory &&
+                matchesBillingCycle &&
+                matchesStatus
+            );
+        });
 
     if (filteredSubscriptions.length === 0) {
         const emptyMessage =
@@ -189,10 +214,23 @@ function displaySubscriptions() {
 const subscriptions = [];
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
+let subscriptionFilters = {
+    category: "",
+    billingCycle: "",
+    status: ""
+};
 
 const subscriptionForm = document.getElementById("subscription-form");
 const subscriptionSearchInput =
     document.getElementById("subscription-search-input");
+const categoryFilter =
+    document.getElementById("category-filter");
+const billingCycleFilter =
+    document.getElementById("billing-cycle-filter");
+const statusFilter =
+    document.getElementById("status-filter");
+const clearFiltersButton =
+    document.getElementById("clear-filters-button");
 const cancelEditButton = document.getElementById("cancel-edit-button");
 
 if (subscriptionSearchInput) {
@@ -201,6 +239,71 @@ if (subscriptionSearchInput) {
         (event) => {
             subscriptionSearchQuery =
                 event.target.value.trim();
+            displaySubscriptions();
+        }
+    );
+}
+
+if (categoryFilter) {
+    categoryFilter.addEventListener(
+        "change",
+        (event) => {
+            subscriptionFilters.category =
+                event.target.value;
+            displaySubscriptions();
+        }
+    );
+}
+
+if (billingCycleFilter) {
+    billingCycleFilter.addEventListener(
+        "change",
+        (event) => {
+            subscriptionFilters.billingCycle =
+                event.target.value;
+            displaySubscriptions();
+        }
+    );
+}
+
+if (statusFilter) {
+    statusFilter.addEventListener(
+        "change",
+        (event) => {
+            subscriptionFilters.status =
+                event.target.value;
+            displaySubscriptions();
+        }
+    );
+}
+
+if (clearFiltersButton) {
+    clearFiltersButton.addEventListener(
+        "click",
+        () => {
+            subscriptionSearchQuery = "";
+            subscriptionFilters = {
+                category: "",
+                billingCycle: "",
+                status: ""
+            };
+
+            if (subscriptionSearchInput) {
+                subscriptionSearchInput.value = "";
+            }
+
+            if (categoryFilter) {
+                categoryFilter.value = "";
+            }
+
+            if (billingCycleFilter) {
+                billingCycleFilter.value = "";
+            }
+
+            if (statusFilter) {
+                statusFilter.value = "";
+            }
+
             displaySubscriptions();
         }
     );
