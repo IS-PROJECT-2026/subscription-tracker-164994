@@ -91,3 +91,7 @@ body {
     text-align: center;
     color: #666666;
 }
+
+.hidden {
+    display: none;
+}
