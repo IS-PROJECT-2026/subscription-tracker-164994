@@ -26,6 +26,52 @@ navigationLinks.forEach((link) => {
 
 console.log("SubTrack initialized.");
 
+function deleteSubscription(subscriptionId) {
+    const subscription = subscriptions.find(
+        (item) => item.id === subscriptionId
+    );
+
+    if (!subscription) {
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `Are you sure you want to delete "${subscription.name}"?`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const index = subscriptions.findIndex(
+        (item) => item.id === subscriptionId
+    );
+
+    if (index === -1) {
+        return;
+    }
+
+    subscriptions.splice(index, 1);
+
+    if (editingSubscriptionId === subscriptionId && subscriptionForm) {
+        editingSubscriptionId = null;
+        subscriptionForm.reset();
+
+        const submitButton =
+            subscriptionForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        submitButton.textContent = "Add Subscription";
+
+        if (cancelEditButton) {
+            cancelEditButton.hidden = true;
+        }
+    }
+
+    displaySubscriptions();
+}
+
 function displaySubscriptions() {
     const subscriptionGrid =
         document.getElementById("subscription-grid");
@@ -101,6 +147,16 @@ function displaySubscriptions() {
         });
 
         actions.appendChild(editButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "delete-subscription-button";
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+            deleteSubscription(subscription.id);
+        });
+
+        actions.appendChild(deleteButton);
         body.appendChild(actions);
 
         card.appendChild(header);
