@@ -89,6 +89,20 @@ function displaySubscriptions() {
         body.appendChild(price);
         body.appendChild(nextPayment);
 
+        const actions = document.createElement("div");
+        actions.className = "subscription-card-actions";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "edit-subscription-button";
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => {
+            startEditingSubscription(subscription.id);
+        });
+
+        actions.appendChild(editButton);
+        body.appendChild(actions);
+
         card.appendChild(header);
         card.appendChild(body);
 
@@ -97,8 +111,51 @@ function displaySubscriptions() {
 }
 
 const subscriptions = [];
+let editingSubscriptionId = null;
 
 const subscriptionForm = document.getElementById("subscription-form");
+const cancelEditButton = document.getElementById("cancel-edit-button");
+
+function startEditingSubscription(subscriptionId) {
+    const subscription = subscriptions.find(
+        (item) => item.id === subscriptionId
+    );
+
+    if (!subscription || !subscriptionForm) {
+        return;
+    }
+
+    editingSubscriptionId = subscriptionId;
+
+    document.getElementById("subscription-name").value =
+        subscription.name;
+    document.getElementById("subscription-category").value =
+        subscription.category;
+    document.getElementById("subscription-price").value =
+        subscription.price;
+    document.getElementById("billing-cycle").value =
+        subscription.billingCycle;
+    document.getElementById("next-payment-date").value =
+        subscription.nextPaymentDate;
+    document.getElementById("subscription-status").value =
+        subscription.status;
+
+    const submitButton =
+        subscriptionForm.querySelector(
+            'button[type="submit"]'
+        );
+
+    submitButton.textContent = "Update Subscription";
+
+    if (cancelEditButton) {
+        cancelEditButton.hidden = false;
+    }
+
+    subscriptionForm.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
 
 if (subscriptionForm) {
     subscriptionForm.addEventListener("submit", (event) => {
@@ -115,9 +172,51 @@ if (subscriptionForm) {
             status: formData.get("status")
         });
 
-        subscriptions.push(subscription);
+        if (editingSubscriptionId) {
+            const index = subscriptions.findIndex(
+                (item) => item.id === editingSubscriptionId
+            );
+
+            if (index !== -1) {
+                subscriptions[index] = {
+                    ...subscription,
+                    id: editingSubscriptionId
+                };
+            }
+
+            editingSubscriptionId = null;
+        } else {
+            subscriptions.push(subscription);
+        }
+
         displaySubscriptions();
 
         subscriptionForm.reset();
+
+        const submitButton =
+            subscriptionForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        submitButton.textContent = "Add Subscription";
+
+        if (cancelEditButton) {
+            cancelEditButton.hidden = true;
+        }
+    });
+}
+
+if (cancelEditButton && subscriptionForm) {
+    cancelEditButton.addEventListener("click", () => {
+        editingSubscriptionId = null;
+        subscriptionForm.reset();
+
+        const submitButton =
+            subscriptionForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        submitButton.textContent = "Add Subscription";
+        cancelEditButton.hidden = true;
     });
 }

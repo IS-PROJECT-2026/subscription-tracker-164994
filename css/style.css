@@ -263,6 +263,29 @@ body {
     }
 }
 
+.subscription-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.edit-subscription-button,
+.secondary-button {
+    border: 1px solid #d4d4d8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    background: #ffffff;
+    color: #3f3f46;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.edit-subscription-button:hover,
+.secondary-button:hover {
+    background: #f4f4f5;
+}
+
 /* Responsive dashboard layout */
 
 @media (max-width: 900px) {
@@ -379,6 +402,7 @@ body {
     grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
 }
 
 .primary-button {
