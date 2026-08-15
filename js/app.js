@@ -53,6 +53,7 @@ function deleteSubscription(subscriptionId) {
 
     subscriptions.splice(index, 1);
     saveSubscriptions();
+    displayMonthlySpending();
 
     if (editingSubscriptionId === subscriptionId && subscriptionForm) {
         editingSubscriptionId = null;
@@ -257,6 +258,41 @@ function saveSubscriptions() {
         JSON.stringify(subscriptions)
     );
 }
+
+function calculateMonthlySpending() {
+    return subscriptions.reduce((total, subscription) => {
+        const price = Number(subscription.price);
+
+        if (subscription.billingCycle === "weekly") {
+            return total + (price * 52) / 12;
+        }
+
+        if (subscription.billingCycle === "monthly") {
+            return total + price;
+        }
+
+        if (subscription.billingCycle === "yearly") {
+            return total + price / 12;
+        }
+
+        return total;
+    }, 0);
+}
+
+function displayMonthlySpending() {
+    const monthlySpendingValue =
+        document.getElementById("monthly-spending-value");
+
+    if (!monthlySpendingValue) {
+        return;
+    }
+
+    const monthlySpending =
+        calculateMonthlySpending();
+
+    monthlySpendingValue.textContent =
+        `KSh ${monthlySpending.toFixed(2)}`;
+}
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
 let subscriptionFilters = {
@@ -280,6 +316,7 @@ const cancelEditButton = document.getElementById("cancel-edit-button");
 
 loadSubscriptions();
 displaySubscriptions();
+displayMonthlySpending();
 
 if (subscriptionSearchInput) {
     subscriptionSearchInput.addEventListener(
@@ -432,6 +469,7 @@ if (subscriptionForm) {
 
         saveSubscriptions();
         displaySubscriptions();
+        displayMonthlySpending();
 
         subscriptionForm.reset();
 
