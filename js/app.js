@@ -52,6 +52,7 @@ function deleteSubscription(subscriptionId) {
     }
 
     subscriptions.splice(index, 1);
+    saveSubscriptions();
 
     if (editingSubscriptionId === subscriptionId && subscriptionForm) {
         editingSubscriptionId = null;
@@ -211,7 +212,51 @@ function displaySubscriptions() {
     });
 }
 
+const SUBSCRIPTIONS_STORAGE_KEY =
+    "subtrack_subscriptions";
 const subscriptions = [];
+
+function loadSubscriptions() {
+    const storedSubscriptions =
+        localStorage.getItem(
+            SUBSCRIPTIONS_STORAGE_KEY
+        );
+
+    if (!storedSubscriptions) {
+        return;
+    }
+
+    try {
+        const parsedSubscriptions =
+            JSON.parse(storedSubscriptions);
+
+        if (!Array.isArray(parsedSubscriptions)) {
+            return;
+        }
+
+        const validSubscriptions =
+            parsedSubscriptions.filter((subscription) =>
+                subscription &&
+                typeof subscription === "object" &&
+                typeof subscription.id === "string" &&
+                typeof subscription.name === "string"
+            );
+
+        subscriptions.push(...validSubscriptions);
+    } catch (error) {
+        console.error(
+            "Failed to load subscriptions:",
+            error
+        );
+    }
+}
+
+function saveSubscriptions() {
+    localStorage.setItem(
+        SUBSCRIPTIONS_STORAGE_KEY,
+        JSON.stringify(subscriptions)
+    );
+}
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
 let subscriptionFilters = {
@@ -232,6 +277,9 @@ const statusFilter =
 const clearFiltersButton =
     document.getElementById("clear-filters-button");
 const cancelEditButton = document.getElementById("cancel-edit-button");
+
+loadSubscriptions();
+displaySubscriptions();
 
 if (subscriptionSearchInput) {
     subscriptionSearchInput.addEventListener(
@@ -382,6 +430,7 @@ if (subscriptionForm) {
             subscriptions.push(subscription);
         }
 
+        saveSubscriptions();
         displaySubscriptions();
 
         subscriptionForm.reset();
