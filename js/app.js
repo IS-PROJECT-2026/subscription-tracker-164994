@@ -1,80 +1,81 @@
 "use strict";
 
-const navigationLinks = document.querySelectorAll(".nav-link");
-const pageSections = document.querySelectorAll(".page-section");
+const STORAGE_KEY = "subtrack_subscriptions";
+const THEME_STORAGE_KEY = "subtrack_theme";
+const subscriptions = [];
 
-navigationLinks.forEach((link) => {
-    link.addEventListener("click", (event) => {
-        event.preventDefault();
+const state = {
+    editingId: null,
+    search: "",
+    filters: { category: "", billingCycle: "", status: "" }
+};
 
-        const targetSection = link.dataset.section;
+const el = {
+    navLinks: document.querySelectorAll(".nav-link"),
+    sections: document.querySelectorAll(".page-section"),
+    form: document.getElementById("subscription-form"),
+    grid: document.getElementById("subscription-grid"),
+    categoryList: document.getElementById("category-analysis-list"),
+    cancelEditButton: document.getElementById("cancel-edit-button"),
+    monthlyValue: document.getElementById("monthly-spending-value"),
+    yearlyValue: document.getElementById("yearly-spending-value"),
+    activeValue: document.getElementById("active-subscriptions-value"),
+    searchInput: document.getElementById("subscription-search-input"),
+    categoryFilter: document.getElementById("category-filter"),
+    billingCycleFilter: document.getElementById("billing-cycle-filter"),
+    statusFilter: document.getElementById("status-filter"),
+    clearFiltersButton: document.getElementById("clear-filters-button"),
+    themeToggle: document.getElementById("theme-toggle")
+};
 
-        pageSections.forEach((section) => {
-            section.classList.toggle(
-                "hidden",
-                section.id !== targetSection
-            );
-        });
+const monthlyFromCycle = {
+    weekly: (price) => (price * 52) / 12,
+    monthly: (price) => price,
+    yearly: (price) => price / 12
+};
 
-        navigationLinks.forEach((navLink) => {
-            navLink.classList.remove("active");
-        });
+const yearlyFromCycle = {
+    weekly: (price) => price * 52,
+    monthly: (price) => price * 12,
+    yearly: (price) => price
+};
 
-        link.classList.add("active");
-    });
-});
+function escapeHtml(text) {
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
 
-console.log("SubTrack initialized.");
+function formatMoney(value) {
+    return `KSh ${Number(value).toFixed(2)}`;
+}
 
-function deleteSubscription(subscriptionId) {
-    const subscription = subscriptions.find(
-        (item) => item.id === subscriptionId
-    );
+function getPreferredTheme() {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
 
-    if (!subscription) {
-        return;
+    if (saved === "dark" || saved === "light") {
+        return saved;
     }
 
-    const confirmed = window.confirm(
-        `Are you sure you want to delete "${subscription.name}"?`
-    );
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
-    if (!confirmed) {
-        return;
+function applyTheme(theme) {
+    document.body.dataset.theme = theme;
+
+    if (el.themeToggle) {
+        const isDark = theme === "dark";
+        el.themeToggle.textContent = isDark ? "Day Mode" : "Night Mode";
+        el.themeToggle.setAttribute("aria-pressed", String(isDark));
     }
+}
 
-    const index = subscriptions.findIndex(
-        (item) => item.id === subscriptionId
-    );
-
-    if (index === -1) {
-        return;
-    }
-
-    subscriptions.splice(index, 1);
-    saveSubscriptions();
-    displayMonthlySpending();
-    displayYearlySpending();
-    displayCategorySpending();
-    displayActiveSubscriptions();
-
-    if (editingSubscriptionId === subscriptionId && subscriptionForm) {
-        editingSubscriptionId = null;
-        subscriptionForm.reset();
-
-        const submitButton =
-            subscriptionForm.querySelector(
-                'button[type="submit"]'
-            );
-
-        submitButton.textContent = "Add Subscription";
-
-        if (cancelEditButton) {
-            cancelEditButton.hidden = true;
-        }
-    }
-
-    displaySubscriptions();
+function setTheme(theme) {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    applyTheme(theme);
 }
 
 function isUpcomingPayment(nextPaymentDate, days = 7) {
@@ -87,215 +88,43 @@ function isUpcomingPayment(nextPaymentDate, days = 7) {
         return false;
     }
 
-    const differenceInMilliseconds =
-        paymentDate.getTime() - today.getTime();
-    const differenceInDays =
-        differenceInMilliseconds / (1000 * 60 * 60 * 24);
-
-    return differenceInDays >= 0 && differenceInDays <= days;
+    const diffDays = (paymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= days;
 }
-
-function displaySubscriptions() {
-    const subscriptionGrid =
-        document.getElementById("subscription-grid");
-
-    if (!subscriptionGrid) {
-        return;
-    }
-
-    subscriptionGrid.innerHTML = "";
-
-    const filteredSubscriptions =
-        subscriptions.filter((subscription) => {
-            const matchesSearch =
-                subscription.name
-                    .toLowerCase()
-                    .includes(
-                        subscriptionSearchQuery.toLowerCase()
-                    );
-
-            const matchesCategory =
-                !subscriptionFilters.category ||
-                subscription.category ===
-                    subscriptionFilters.category;
-
-            const matchesBillingCycle =
-                !subscriptionFilters.billingCycle ||
-                subscription.billingCycle ===
-                    subscriptionFilters.billingCycle;
-
-            const matchesStatus =
-                !subscriptionFilters.status ||
-                subscription.status ===
-                    subscriptionFilters.status;
-
-            return (
-                matchesSearch &&
-                matchesCategory &&
-                matchesBillingCycle &&
-                matchesStatus
-            );
-        });
-
-    if (filteredSubscriptions.length === 0) {
-        const emptyMessage =
-            document.createElement("p");
-        emptyMessage.className =
-            "subscription-search-empty";
-        emptyMessage.textContent =
-            subscriptionSearchQuery
-                ? `No subscriptions found for "${subscriptionSearchQuery}".`
-                : "No subscriptions added yet.";
-        subscriptionGrid.appendChild(emptyMessage);
-        return;
-    }
-
-    filteredSubscriptions.forEach((subscription) => {
-        const card = document.createElement("article");
-
-        card.className = "subscription-card";
-
-        const header = document.createElement("div");
-        header.className = "subscription-card-header";
-
-        const details = document.createElement("div");
-
-        const name = document.createElement("h4");
-        name.textContent = subscription.name;
-
-        const category = document.createElement("span");
-        category.className = "subscription-category";
-        category.textContent = subscription.category;
-
-        details.appendChild(name);
-        details.appendChild(category);
-
-        const status = document.createElement("span");
-        status.className =
-            `subscription-status ${subscription.status}`;
-        status.textContent = subscription.status;
-
-        header.appendChild(details);
-        header.appendChild(status);
-
-        const body = document.createElement("div");
-        body.className = "subscription-card-body";
-
-        const price = document.createElement("p");
-        price.className = "subscription-price";
-        price.textContent =
-            `KSh ${subscription.price.toLocaleString()}`;
-
-        const billing = document.createElement("span");
-        billing.textContent =
-            ` / ${subscription.billingCycle}`;
-        price.appendChild(billing);
-
-        const nextPayment = document.createElement("p");
-        nextPayment.className =
-            "subscription-next-payment";
-
-        if (isUpcomingPayment(subscription.nextPaymentDate)) {
-            nextPayment.classList.add("upcoming-payment");
-        }
-
-        nextPayment.textContent = "Next payment: ";
-
-        const date = document.createElement("strong");
-        date.textContent = subscription.nextPaymentDate;
-        nextPayment.appendChild(date);
-
-        body.appendChild(price);
-        body.appendChild(nextPayment);
-
-        const actions = document.createElement("div");
-        actions.className = "subscription-card-actions";
-
-        const editButton = document.createElement("button");
-        editButton.type = "button";
-        editButton.className = "edit-subscription-button";
-        editButton.textContent = "Edit";
-        editButton.addEventListener("click", () => {
-            startEditingSubscription(subscription.id);
-        });
-
-        actions.appendChild(editButton);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "delete-subscription-button";
-        deleteButton.textContent = "Delete";
-        deleteButton.addEventListener("click", () => {
-            deleteSubscription(subscription.id);
-        });
-
-        actions.appendChild(deleteButton);
-        body.appendChild(actions);
-
-        card.appendChild(header);
-        card.appendChild(body);
-
-        subscriptionGrid.appendChild(card);
-    });
-}
-
-const SUBSCRIPTIONS_STORAGE_KEY =
-    "subtrack_subscriptions";
-const subscriptions = [];
 
 function validateSubscriptionData(data) {
     const errors = {};
     const name = String(data.name || "").trim();
-    const category = data.category;
     const price = Number(data.price);
-    const billingCycle = data.billingCycle;
-    const nextPaymentDate = data.nextPaymentDate;
-    const status = data.status;
 
     if (!name) {
         errors.name = "Subscription name is required.";
     }
 
-    if (
-        data.price === "" ||
-        data.price === null ||
-        data.price === undefined ||
-        !Number.isFinite(price) ||
-        price <= 0
-    ) {
+    if (data.price === "" || data.price === null || data.price === undefined || !Number.isFinite(price) || price <= 0) {
         errors.price = "Price must be greater than zero.";
     }
 
-    if (!SUBSCRIPTION_CATEGORIES.includes(category)) {
+    if (!SUBSCRIPTION_CATEGORIES.includes(data.category)) {
         errors.category = "Please select a valid category.";
     }
 
-    if (!BILLING_CYCLES.includes(billingCycle)) {
+    if (!BILLING_CYCLES.includes(data.billingCycle)) {
         errors.billingCycle = "Please select a valid billing cycle.";
     }
 
-    if (!nextPaymentDate) {
-        errors.nextPaymentDate =
-            "Next payment date is required.";
+    if (!data.nextPaymentDate) {
+        errors.nextPaymentDate = "Next payment date is required.";
     } else {
-        const paymentDate = new Date(
-            `${nextPaymentDate}T00:00:00`
-        );
-        const [year, month, day] =
-            nextPaymentDate.split("-").map(Number);
+        const date = new Date(`${data.nextPaymentDate}T00:00:00`);
+        const [year, month, day] = data.nextPaymentDate.split("-").map(Number);
 
-        if (
-            Number.isNaN(paymentDate.getTime()) ||
-            paymentDate.getFullYear() !== year ||
-            paymentDate.getMonth() !== month - 1 ||
-            paymentDate.getDate() !== day
-        ) {
-            errors.nextPaymentDate =
-                "Please enter a valid payment date.";
+        if (Number.isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+            errors.nextPaymentDate = "Please enter a valid payment date.";
         }
     }
 
-    if (!SUBSCRIPTION_STATUSES.includes(status)) {
+    if (!SUBSCRIPTION_STATUSES.includes(data.status)) {
         errors.status = "Please select a valid status.";
     }
 
@@ -303,504 +132,424 @@ function validateSubscriptionData(data) {
 }
 
 function isValidSubscription(subscription) {
-    return Object.keys(
-        validateSubscriptionData(subscription)
-    ).length === 0;
+    return Object.keys(validateSubscriptionData(subscription)).length === 0;
 }
 
 function loadSubscriptions() {
-    const storedSubscriptions =
-        localStorage.getItem(
-            SUBSCRIPTIONS_STORAGE_KEY
-        );
-
-    if (!storedSubscriptions) {
-        return;
-    }
-
     try {
-        const parsedSubscriptions =
-            JSON.parse(storedSubscriptions);
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 
-        if (!Array.isArray(parsedSubscriptions)) {
+        if (!Array.isArray(parsed)) {
             return;
         }
 
-        const validSubscriptions =
-            parsedSubscriptions.filter((subscription) => {
-                return (
-                    subscription &&
-                    typeof subscription === "object" &&
-                    typeof subscription.id === "string" &&
-                    isValidSubscription(subscription)
-                );
-            });
+        const valid = parsed.filter(
+            (item) => item && typeof item === "object" && typeof item.id === "string" && isValidSubscription(item)
+        );
 
-        subscriptions.push(...validSubscriptions);
+        subscriptions.push(...valid);
 
-        if (validSubscriptions.length !== parsedSubscriptions.length) {
+        if (valid.length !== parsed.length) {
             saveSubscriptions();
         }
     } catch (error) {
-        console.error(
-            "Failed to load subscriptions:",
-            error
-        );
+        console.error("Failed to load subscriptions:", error);
     }
 }
 
 function saveSubscriptions() {
     try {
-        localStorage.setItem(
-            SUBSCRIPTIONS_STORAGE_KEY,
-            JSON.stringify(subscriptions)
-        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(subscriptions));
     } catch (error) {
-        console.error(
-            "Failed to save subscriptions:",
-            error
-        );
+        console.error("Failed to save subscriptions:", error);
     }
 }
 
-function calculateMonthlySpending() {
-    return subscriptions.reduce((total, subscription) => {
-        const price = Number(subscription.price);
-
-        if (subscription.billingCycle === "weekly") {
-            return total + (price * 52) / 12;
-        }
-
-        if (subscription.billingCycle === "monthly") {
-            return total + price;
-        }
-
-        if (subscription.billingCycle === "yearly") {
-            return total + price / 12;
-        }
-
-        return total;
-    }, 0);
+function getMonthlyTotal() {
+    return subscriptions.reduce((total, sub) => total + (monthlyFromCycle[sub.billingCycle]?.(Number(sub.price)) || 0), 0);
 }
 
-function calculateYearlySpending() {
-    return subscriptions.reduce((total, subscription) => {
-        const price = Number(subscription.price);
-
-        if (subscription.billingCycle === "weekly") {
-            return total + price * 52;
-        }
-
-        if (subscription.billingCycle === "monthly") {
-            return total + price * 12;
-        }
-
-        if (subscription.billingCycle === "yearly") {
-            return total + price;
-        }
-
-        return total;
-    }, 0);
+function getYearlyTotal() {
+    return subscriptions.reduce((total, sub) => total + (yearlyFromCycle[sub.billingCycle]?.(Number(sub.price)) || 0), 0);
 }
 
-function calculateCategorySpending() {
-    const categorySpending = {};
-
-    subscriptions.forEach((subscription) => {
-        const price = Number(subscription.price);
-        let monthlyCost = 0;
-
-        if (subscription.billingCycle === "weekly") {
-            monthlyCost = price * 52 / 12;
-        } else if (subscription.billingCycle === "monthly") {
-            monthlyCost = price;
-        } else if (subscription.billingCycle === "yearly") {
-            monthlyCost = price / 12;
-        }
-
-        if (!categorySpending[subscription.category]) {
-            categorySpending[subscription.category] = 0;
-        }
-
-        categorySpending[subscription.category] += monthlyCost;
-    });
-
-    return categorySpending;
+function getCategoryTotals() {
+    return subscriptions.reduce((totals, sub) => {
+        const amount = monthlyFromCycle[sub.billingCycle]?.(Number(sub.price)) || 0;
+        totals[sub.category] = (totals[sub.category] || 0) + amount;
+        return totals;
+    }, {});
 }
 
-function calculateActiveSubscriptions() {
-    return subscriptions.filter(
-        (subscription) => subscription.status === "active"
-    ).length;
+function getActiveCount() {
+    return subscriptions.filter((sub) => sub.status === "active").length;
 }
 
-function displayMonthlySpending() {
-    const monthlySpendingValue =
-        document.getElementById("monthly-spending-value");
-
-    if (!monthlySpendingValue) {
-        return;
-    }
-
-    const monthlySpending =
-        calculateMonthlySpending();
-
-    monthlySpendingValue.textContent =
-        `KSh ${monthlySpending.toFixed(2)}`;
-}
-
-function displayYearlySpending() {
-    const yearlySpendingValue =
-        document.getElementById("yearly-spending-value");
-
-    if (!yearlySpendingValue) {
-        return;
-    }
-
-    const yearlySpending =
-        calculateYearlySpending();
-
-    yearlySpendingValue.textContent =
-        `KSh ${yearlySpending.toFixed(2)}`;
-}
-
-function displayCategorySpending() {
-    const categoryAnalysisList =
-        document.getElementById("category-analysis-list");
-
-    if (!categoryAnalysisList) {
-        return;
-    }
-
-    categoryAnalysisList.innerHTML = "";
-
-    const categorySpending =
-        calculateCategorySpending();
-    const categories =
-        Object.entries(categorySpending)
-            .sort(([, first], [, second]) => second - first);
-
-    if (categories.length === 0) {
-        const emptyMessage =
-            document.createElement("p");
-        emptyMessage.textContent =
-            "No subscription spending data available.";
-        categoryAnalysisList.appendChild(emptyMessage);
-        return;
-    }
-
-    categories.forEach(([category, amount]) => {
-        const item = document.createElement("div");
-        item.className = "category-analysis-item";
-
-        const categoryName =
-            document.createElement("span");
-        categoryName.className =
-            "category-analysis-name";
-        categoryName.textContent = category;
-
-        const categoryAmount =
-            document.createElement("strong");
-        categoryAmount.className =
-            "category-analysis-amount";
-        categoryAmount.textContent =
-            `KSh ${amount.toFixed(2)} / month`;
-
-        item.appendChild(categoryName);
-        item.appendChild(categoryAmount);
-        categoryAnalysisList.appendChild(item);
-    });
-}
-
-function displayActiveSubscriptions() {
-    const activeSubscriptionsValue =
-        document.getElementById("active-subscriptions-value");
-
-    if (!activeSubscriptionsValue) {
-        return;
-    }
-
-    activeSubscriptionsValue.textContent =
-        calculateActiveSubscriptions();
-}
-let editingSubscriptionId = null;
-let subscriptionSearchQuery = "";
-let subscriptionFilters = {
-    category: "",
-    billingCycle: "",
-    status: ""
-};
-
-const subscriptionForm = document.getElementById("subscription-form");
-const subscriptionSearchInput =
-    document.getElementById("subscription-search-input");
-const categoryFilter =
-    document.getElementById("category-filter");
-const billingCycleFilter =
-    document.getElementById("billing-cycle-filter");
-const statusFilter =
-    document.getElementById("status-filter");
-const clearFiltersButton =
-    document.getElementById("clear-filters-button");
-const cancelEditButton = document.getElementById("cancel-edit-button");
-
-loadSubscriptions();
-displaySubscriptions();
-displayMonthlySpending();
-displayYearlySpending();
-displayCategorySpending();
-displayActiveSubscriptions();
-
-if (subscriptionSearchInput) {
-    subscriptionSearchInput.addEventListener(
-        "input",
-        (event) => {
-            subscriptionSearchQuery =
-                event.target.value.trim();
-            displaySubscriptions();
-        }
-    );
-}
-
-if (categoryFilter) {
-    categoryFilter.addEventListener(
-        "change",
-        (event) => {
-            subscriptionFilters.category =
-                event.target.value;
-            displaySubscriptions();
-        }
-    );
-}
-
-if (billingCycleFilter) {
-    billingCycleFilter.addEventListener(
-        "change",
-        (event) => {
-            subscriptionFilters.billingCycle =
-                event.target.value;
-            displaySubscriptions();
-        }
-    );
-}
-
-if (statusFilter) {
-    statusFilter.addEventListener(
-        "change",
-        (event) => {
-            subscriptionFilters.status =
-                event.target.value;
-            displaySubscriptions();
-        }
-    );
-}
-
-if (clearFiltersButton) {
-    clearFiltersButton.addEventListener(
-        "click",
-        () => {
-            subscriptionSearchQuery = "";
-            subscriptionFilters = {
-                category: "",
-                billingCycle: "",
-                status: ""
-            };
-
-            if (subscriptionSearchInput) {
-                subscriptionSearchInput.value = "";
-            }
-
-            if (categoryFilter) {
-                categoryFilter.value = "";
-            }
-
-            if (billingCycleFilter) {
-                billingCycleFilter.value = "";
-            }
-
-            if (statusFilter) {
-                statusFilter.value = "";
-            }
-
-            displaySubscriptions();
-        }
-    );
-}
-
-function startEditingSubscription(subscriptionId) {
-    const subscription = subscriptions.find(
-        (item) => item.id === subscriptionId
-    );
-
-    if (!subscription || !subscriptionForm) {
-        return;
-    }
-
-    editingSubscriptionId = subscriptionId;
-
-    document.getElementById("subscription-name").value =
-        subscription.name;
-    document.getElementById("subscription-category").value =
-        subscription.category;
-    document.getElementById("subscription-price").value =
-        subscription.price;
-    document.getElementById("billing-cycle").value =
-        subscription.billingCycle;
-    document.getElementById("next-payment-date").value =
-        subscription.nextPaymentDate;
-    document.getElementById("subscription-status").value =
-        subscription.status;
-
-    const submitButton =
-        subscriptionForm.querySelector(
-            'button[type="submit"]'
-        );
-
-    submitButton.textContent = "Update Subscription";
-
-    if (cancelEditButton) {
-        cancelEditButton.hidden = false;
-    }
-
-    subscriptionForm.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
+function clearValidationErrors() {
+    document.querySelectorAll(".validation-error").forEach((node) => node.remove());
+    document.querySelectorAll(".input-error").forEach((node) => node.classList.remove("input-error"));
 }
 
 function displayValidationErrors(errors) {
     clearValidationErrors();
 
-    Object.entries(errors).forEach(
-        ([field, message]) => {
-            const input = document.querySelector(
-                `[name="${field}"]`
-            );
+    Object.entries(errors).forEach(([field, message]) => {
+        const input = document.querySelector(`[name="${field}"]`);
 
-            if (!input) {
-                return;
+        if (!input) {
+            return;
+        }
+
+        input.classList.add("input-error");
+
+        const msg = document.createElement("p");
+        msg.className = "validation-error";
+        msg.textContent = message;
+        input.parentElement?.appendChild(msg);
+    });
+}
+
+function setFormMode(isEditing) {
+    if (!el.form) {
+        return;
+    }
+
+    const submit = el.form.querySelector('button[type="submit"]');
+
+    if (submit) {
+        submit.textContent = isEditing ? "Update Subscription" : "Add Subscription";
+    }
+
+    if (el.cancelEditButton) {
+        el.cancelEditButton.hidden = !isEditing;
+    }
+}
+
+function resetFormState() {
+    state.editingId = null;
+
+    if (el.form) {
+        el.form.reset();
+    }
+
+    clearValidationErrors();
+    setFormMode(false);
+}
+
+function renderSummary() {
+    if (el.monthlyValue) {
+        el.monthlyValue.textContent = formatMoney(getMonthlyTotal());
+    }
+
+    if (el.yearlyValue) {
+        el.yearlyValue.textContent = formatMoney(getYearlyTotal());
+    }
+
+    if (el.activeValue) {
+        el.activeValue.textContent = String(getActiveCount());
+    }
+}
+
+function matchesFilters(sub) {
+    return sub.name.toLowerCase().includes(state.search.toLowerCase())
+        && (!state.filters.category || sub.category === state.filters.category)
+        && (!state.filters.billingCycle || sub.billingCycle === state.filters.billingCycle)
+        && (!state.filters.status || sub.status === state.filters.status);
+}
+
+function renderSubscriptions() {
+    if (!el.grid) {
+        return;
+    }
+
+    const filtered = subscriptions.filter(matchesFilters);
+
+    if (filtered.length === 0) {
+        const message = state.search
+            ? `No subscriptions found for "${escapeHtml(state.search)}".`
+            : "No subscriptions added yet.";
+
+        el.grid.innerHTML = `<p class="subscription-search-empty">${message}</p>`;
+        return;
+    }
+
+    el.grid.innerHTML = filtered.map((sub, index) => {
+        const upcomingClass = isUpcomingPayment(sub.nextPaymentDate) ? " upcoming-payment" : "";
+
+        return `
+            <article class="subscription-card reveal" style="--i:${index}">
+                <div class="subscription-card-header">
+                    <div>
+                        <h4>${escapeHtml(sub.name)}</h4>
+                        <span class="subscription-category">${escapeHtml(sub.category)}</span>
+                    </div>
+                    <span class="subscription-status ${escapeHtml(sub.status)}">${escapeHtml(sub.status)}</span>
+                </div>
+                <div class="subscription-card-body">
+                    <p class="subscription-price">
+                        KSh ${Number(sub.price).toLocaleString()}<span> / ${escapeHtml(sub.billingCycle)}</span>
+                    </p>
+                    <p class="subscription-next-payment${upcomingClass}">
+                        Next payment: <strong>${escapeHtml(sub.nextPaymentDate)}</strong>
+                    </p>
+                    <div class="subscription-card-actions">
+                        <button type="button" class="edit-subscription-button" data-action="edit" data-id="${sub.id}">Edit</button>
+                        <button type="button" class="delete-subscription-button" data-action="delete" data-id="${sub.id}">Delete</button>
+                    </div>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+function renderCategorySpending() {
+    if (!el.categoryList) {
+        return;
+    }
+
+    const rows = Object.entries(getCategoryTotals()).sort(([, a], [, b]) => b - a);
+
+    if (rows.length === 0) {
+        el.categoryList.innerHTML = "<p>No subscription spending data available.</p>";
+        return;
+    }
+
+    el.categoryList.innerHTML = rows
+        .map(([category, amount], index) => `
+            <div class="category-analysis-item reveal" style="--i:${index}">
+                <span class="category-analysis-name">${escapeHtml(category)}</span>
+                <strong class="category-analysis-amount">${formatMoney(amount)} / month</strong>
+            </div>
+        `)
+        .join("");
+}
+
+function replaySectionAnimation(section) {
+    if (!section) {
+        return;
+    }
+
+    section.style.animation = "none";
+    void section.offsetWidth;
+    section.style.animation = "";
+}
+
+function renderAll() {
+    renderSubscriptions();
+    renderSummary();
+    renderCategorySpending();
+}
+
+function deleteSubscription(subscriptionId) {
+    const subscription = subscriptions.find((item) => item.id === subscriptionId);
+
+    if (!subscription) {
+        return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to delete "${subscription.name}"?`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    const index = subscriptions.findIndex((item) => item.id === subscriptionId);
+
+    if (index === -1) {
+        return;
+    }
+
+    subscriptions.splice(index, 1);
+
+    if (state.editingId === subscriptionId) {
+        resetFormState();
+    }
+
+    saveSubscriptions();
+    renderAll();
+}
+
+function startEditingSubscription(subscriptionId) {
+    const subscription = subscriptions.find((item) => item.id === subscriptionId);
+
+    if (!subscription || !el.form) {
+        return;
+    }
+
+    state.editingId = subscriptionId;
+
+    document.getElementById("subscription-name").value = subscription.name;
+    document.getElementById("subscription-category").value = subscription.category;
+    document.getElementById("subscription-price").value = subscription.price;
+    document.getElementById("billing-cycle").value = subscription.billingCycle;
+    document.getElementById("next-payment-date").value = subscription.nextPaymentDate;
+    document.getElementById("subscription-status").value = subscription.status;
+
+    setFormMode(true);
+
+    el.form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function bindNavigation() {
+    el.navLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+
+            const targetSection = link.dataset.section;
+
+            el.sections.forEach((section) => {
+                section.classList.toggle("hidden", section.id !== targetSection);
+            });
+
+            el.navLinks.forEach((item) => item.classList.remove("active"));
+            link.classList.add("active");
+
+            const visibleSection = document.getElementById(targetSection);
+            replaySectionAnimation(visibleSection);
+        });
+    });
+}
+
+function bindThemeToggle() {
+    if (!el.themeToggle) {
+        return;
+    }
+
+    el.themeToggle.addEventListener("click", () => {
+        const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+        setTheme(nextTheme);
+    });
+}
+
+function bindFilters() {
+    if (el.searchInput) {
+        el.searchInput.addEventListener("input", (event) => {
+            state.search = event.target.value.trim();
+            renderSubscriptions();
+        });
+    }
+
+    [
+        [el.categoryFilter, "category"],
+        [el.billingCycleFilter, "billingCycle"],
+        [el.statusFilter, "status"]
+    ].forEach(([node, key]) => {
+        if (!node) {
+            return;
+        }
+
+        node.addEventListener("change", (event) => {
+            state.filters[key] = event.target.value;
+            renderSubscriptions();
+        });
+    });
+
+    if (el.clearFiltersButton) {
+        el.clearFiltersButton.addEventListener("click", () => {
+            state.search = "";
+            state.filters = { category: "", billingCycle: "", status: "" };
+
+            if (el.searchInput) {
+                el.searchInput.value = "";
             }
 
-            input.classList.add("input-error");
+            if (el.categoryFilter) {
+                el.categoryFilter.value = "";
+            }
 
-            const errorMessage =
-                document.createElement("p");
-            errorMessage.className =
-                "validation-error";
-            errorMessage.textContent = message;
+            if (el.billingCycleFilter) {
+                el.billingCycleFilter.value = "";
+            }
 
-            input.parentElement.appendChild(
-                errorMessage
-            );
-        }
-    );
+            if (el.statusFilter) {
+                el.statusFilter.value = "";
+            }
+
+            renderSubscriptions();
+        });
+    }
 }
 
-function clearValidationErrors() {
-    document
-        .querySelectorAll(".validation-error")
-        .forEach((element) => element.remove());
+function bindSubscriptionActions() {
+    if (!el.grid) {
+        return;
+    }
 
-    document
-        .querySelectorAll(".input-error")
-        .forEach((element) =>
-            element.classList.remove("input-error")
-        );
+    el.grid.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+
+        if (!button) {
+            return;
+        }
+
+        const { action, id } = button.dataset;
+
+        if (action === "edit") {
+            startEditingSubscription(id);
+            return;
+        }
+
+        if (action === "delete") {
+            deleteSubscription(id);
+        }
+    });
 }
 
-if (subscriptionForm) {
-    subscriptionForm.addEventListener(
-        "input",
-        () => {
-            clearValidationErrors();
-        }
-    );
+function bindForm() {
+    if (!el.form) {
+        return;
+    }
 
-    subscriptionForm.addEventListener(
-        "change",
-        () => {
-            clearValidationErrors();
-        }
-    );
+    ["input", "change"].forEach((eventName) => {
+        el.form.addEventListener(eventName, clearValidationErrors);
+    });
 
-    subscriptionForm.addEventListener("submit", (event) => {
+    el.form.addEventListener("submit", (event) => {
         event.preventDefault();
 
-        const formData = new FormData(subscriptionForm);
+        const data = Object.fromEntries(new FormData(el.form).entries());
+        const errors = validateSubscriptionData(data);
 
-        const subscriptionData = {
-            name: formData.get("name"),
-            category: formData.get("category"),
-            price: formData.get("price"),
-            billingCycle: formData.get("billingCycle"),
-            nextPaymentDate: formData.get("nextPaymentDate"),
-            status: formData.get("status")
-        };
-
-        const validationErrors =
-            validateSubscriptionData(subscriptionData);
-
-        if (Object.keys(validationErrors).length > 0) {
-            displayValidationErrors(validationErrors);
+        if (Object.keys(errors).length > 0) {
+            displayValidationErrors(errors);
             return;
         }
 
         clearValidationErrors();
 
-        const subscription = createSubscription(
-            subscriptionData
-        );
+        const subscription = createSubscription(data);
 
-        if (editingSubscriptionId) {
-            const index = subscriptions.findIndex(
-                (item) => item.id === editingSubscriptionId
-            );
+        if (state.editingId) {
+            const index = subscriptions.findIndex((item) => item.id === state.editingId);
 
             if (index !== -1) {
-                subscriptions[index] = {
-                    ...subscription,
-                    id: editingSubscriptionId
-                };
+                subscriptions[index] = { ...subscription, id: state.editingId };
             }
-
-            editingSubscriptionId = null;
         } else {
             subscriptions.push(subscription);
         }
 
         saveSubscriptions();
-        displaySubscriptions();
-        displayMonthlySpending();
-        displayYearlySpending();
-        displayCategorySpending();
-        displayActiveSubscriptions();
-
-        subscriptionForm.reset();
-
-        const submitButton =
-            subscriptionForm.querySelector(
-                'button[type="submit"]'
-            );
-
-        submitButton.textContent = "Add Subscription";
-
-        if (cancelEditButton) {
-            cancelEditButton.hidden = true;
-        }
+        renderAll();
+        resetFormState();
     });
+
+    if (el.cancelEditButton) {
+        el.cancelEditButton.addEventListener("click", resetFormState);
+    }
 }
 
-if (cancelEditButton && subscriptionForm) {
-    cancelEditButton.addEventListener("click", () => {
-        editingSubscriptionId = null;
-        subscriptionForm.reset();
-
-        const submitButton =
-            subscriptionForm.querySelector(
-                'button[type="submit"]'
-            );
-
-        submitButton.textContent = "Add Subscription";
-        cancelEditButton.hidden = true;
-    });
+function init() {
+    applyTheme(getPreferredTheme());
+    bindNavigation();
+    bindThemeToggle();
+    bindFilters();
+    bindSubscriptionActions();
+    bindForm();
+    loadSubscriptions();
+    renderAll();
+    setFormMode(false);
+    console.log("SubTrack initialized.");
 }
+
+init();
