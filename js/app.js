@@ -54,6 +54,7 @@ function deleteSubscription(subscriptionId) {
     subscriptions.splice(index, 1);
     saveSubscriptions();
     displayMonthlySpending();
+    displayYearlySpending();
 
     if (editingSubscriptionId === subscriptionId && subscriptionForm) {
         editingSubscriptionId = null;
@@ -279,6 +280,26 @@ function calculateMonthlySpending() {
     }, 0);
 }
 
+function calculateYearlySpending() {
+    return subscriptions.reduce((total, subscription) => {
+        const price = Number(subscription.price);
+
+        if (subscription.billingCycle === "weekly") {
+            return total + price * 52;
+        }
+
+        if (subscription.billingCycle === "monthly") {
+            return total + price * 12;
+        }
+
+        if (subscription.billingCycle === "yearly") {
+            return total + price;
+        }
+
+        return total;
+    }, 0);
+}
+
 function displayMonthlySpending() {
     const monthlySpendingValue =
         document.getElementById("monthly-spending-value");
@@ -292,6 +313,21 @@ function displayMonthlySpending() {
 
     monthlySpendingValue.textContent =
         `KSh ${monthlySpending.toFixed(2)}`;
+}
+
+function displayYearlySpending() {
+    const yearlySpendingValue =
+        document.getElementById("yearly-spending-value");
+
+    if (!yearlySpendingValue) {
+        return;
+    }
+
+    const yearlySpending =
+        calculateYearlySpending();
+
+    yearlySpendingValue.textContent =
+        `KSh ${yearlySpending.toFixed(2)}`;
 }
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
@@ -317,6 +353,7 @@ const cancelEditButton = document.getElementById("cancel-edit-button");
 loadSubscriptions();
 displaySubscriptions();
 displayMonthlySpending();
+displayYearlySpending();
 
 if (subscriptionSearchInput) {
     subscriptionSearchInput.addEventListener(
@@ -470,6 +507,7 @@ if (subscriptionForm) {
         saveSubscriptions();
         displaySubscriptions();
         displayMonthlySpending();
+        displayYearlySpending();
 
         subscriptionForm.reset();
 
