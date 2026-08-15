@@ -247,6 +247,10 @@ body {
     font-size: 13px;
 }
 
+.upcoming-payment {
+    font-weight: 600;
+}
+
 .subscription-next-payment strong {
     color: #3f3f46;
 }

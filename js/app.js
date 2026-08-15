@@ -75,6 +75,24 @@ function deleteSubscription(subscriptionId) {
     displaySubscriptions();
 }
 
+function isUpcomingPayment(nextPaymentDate, days = 7) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const paymentDate = new Date(`${nextPaymentDate}T00:00:00`);
+
+    if (Number.isNaN(paymentDate.getTime())) {
+        return false;
+    }
+
+    const differenceInMilliseconds =
+        paymentDate.getTime() - today.getTime();
+    const differenceInDays =
+        differenceInMilliseconds / (1000 * 60 * 60 * 24);
+
+    return differenceInDays >= 0 && differenceInDays <= days;
+}
+
 function displaySubscriptions() {
     const subscriptionGrid =
         document.getElementById("subscription-grid");
@@ -174,6 +192,11 @@ function displaySubscriptions() {
         const nextPayment = document.createElement("p");
         nextPayment.className =
             "subscription-next-payment";
+
+        if (isUpcomingPayment(subscription.nextPaymentDate)) {
+            nextPayment.classList.add("upcoming-payment");
+        }
+
         nextPayment.textContent = "Next payment: ";
 
         const date = document.createElement("strong");
