@@ -507,6 +507,16 @@ body {
     border-color: #71717a;
 }
 
+.input-error {
+    border-color: #dc2626;
+}
+
+.validation-error {
+    margin-top: 6px;
+    color: #dc2626;
+    font-size: 0.875rem;
+}
+
 .form-actions {
     grid-column: 1 / -1;
     display: flex;

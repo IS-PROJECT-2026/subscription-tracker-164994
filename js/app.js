@@ -56,6 +56,7 @@ function deleteSubscription(subscriptionId) {
     displayMonthlySpending();
     displayYearlySpending();
     displayCategorySpending();
+    displayActiveSubscriptions();
 
     if (editingSubscriptionId === subscriptionId && subscriptionForm) {
         editingSubscriptionId = null;
@@ -242,6 +243,71 @@ const SUBSCRIPTIONS_STORAGE_KEY =
     "subtrack_subscriptions";
 const subscriptions = [];
 
+function validateSubscriptionData(data) {
+    const errors = {};
+    const name = String(data.name || "").trim();
+    const category = data.category;
+    const price = Number(data.price);
+    const billingCycle = data.billingCycle;
+    const nextPaymentDate = data.nextPaymentDate;
+    const status = data.status;
+
+    if (!name) {
+        errors.name = "Subscription name is required.";
+    }
+
+    if (
+        data.price === "" ||
+        data.price === null ||
+        data.price === undefined ||
+        !Number.isFinite(price) ||
+        price <= 0
+    ) {
+        errors.price = "Price must be greater than zero.";
+    }
+
+    if (!SUBSCRIPTION_CATEGORIES.includes(category)) {
+        errors.category = "Please select a valid category.";
+    }
+
+    if (!BILLING_CYCLES.includes(billingCycle)) {
+        errors.billingCycle = "Please select a valid billing cycle.";
+    }
+
+    if (!nextPaymentDate) {
+        errors.nextPaymentDate =
+            "Next payment date is required.";
+    } else {
+        const paymentDate = new Date(
+            `${nextPaymentDate}T00:00:00`
+        );
+        const [year, month, day] =
+            nextPaymentDate.split("-").map(Number);
+
+        if (
+            Number.isNaN(paymentDate.getTime()) ||
+            paymentDate.getFullYear() !== year ||
+            paymentDate.getMonth() !== month - 1 ||
+            paymentDate.getDate() !== day
+        ) {
+            errors.nextPaymentDate =
+                "Please enter a valid payment date.";
+        }
+    }
+
+    if (!SUBSCRIPTION_STATUSES.includes(status)) {
+        errors.status = "Please select a valid status.";
+    }
+
+    return errors;
+}
+
+function isValidSubscription(subscription) {
+    return Object.keys(
+        validateSubscriptionData(subscription)
+    ).length === 0;
+}
+
 function loadSubscriptions() {
     const storedSubscriptions =
         localStorage.getItem(
@@ -261,14 +327,20 @@ function loadSubscriptions() {
         }
 
         const validSubscriptions =
-            parsedSubscriptions.filter((subscription) =>
-                subscription &&
-                typeof subscription === "object" &&
-                typeof subscription.id === "string" &&
-                typeof subscription.name === "string"
-            );
+            parsedSubscriptions.filter((subscription) => {
+                return (
+                    subscription &&
+                    typeof subscription === "object" &&
+                    typeof subscription.id === "string" &&
+                    isValidSubscription(subscription)
+                );
+            });
 
         subscriptions.push(...validSubscriptions);
+
+        if (validSubscriptions.length !== parsedSubscriptions.length) {
+            saveSubscriptions();
+        }
     } catch (error) {
         console.error(
             "Failed to load subscriptions:",
@@ -278,10 +350,17 @@ function loadSubscriptions() {
 }
 
 function saveSubscriptions() {
-    localStorage.setItem(
-        SUBSCRIPTIONS_STORAGE_KEY,
-        JSON.stringify(subscriptions)
-    );
+    try {
+        localStorage.setItem(
+            SUBSCRIPTIONS_STORAGE_KEY,
+            JSON.stringify(subscriptions)
+        );
+    } catch (error) {
+        console.error(
+            "Failed to save subscriptions:",
+            error
+        );
+    }
 }
 
 function calculateMonthlySpending() {
@@ -347,6 +426,12 @@ function calculateCategorySpending() {
     });
 
     return categorySpending;
+}
+
+function calculateActiveSubscriptions() {
+    return subscriptions.filter(
+        (subscription) => subscription.status === "active"
+    ).length;
 }
 
 function displayMonthlySpending() {
@@ -426,6 +511,18 @@ function displayCategorySpending() {
         categoryAnalysisList.appendChild(item);
     });
 }
+
+function displayActiveSubscriptions() {
+    const activeSubscriptionsValue =
+        document.getElementById("active-subscriptions-value");
+
+    if (!activeSubscriptionsValue) {
+        return;
+    }
+
+    activeSubscriptionsValue.textContent =
+        calculateActiveSubscriptions();
+}
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
 let subscriptionFilters = {
@@ -452,6 +549,7 @@ displaySubscriptions();
 displayMonthlySpending();
 displayYearlySpending();
 displayCategorySpending();
+displayActiveSubscriptions();
 
 if (subscriptionSearchInput) {
     subscriptionSearchInput.addEventListener(
@@ -570,20 +668,88 @@ function startEditingSubscription(subscriptionId) {
     });
 }
 
+function displayValidationErrors(errors) {
+    clearValidationErrors();
+
+    Object.entries(errors).forEach(
+        ([field, message]) => {
+            const input = document.querySelector(
+                `[name="${field}"]`
+            );
+
+            if (!input) {
+                return;
+            }
+
+            input.classList.add("input-error");
+
+            const errorMessage =
+                document.createElement("p");
+            errorMessage.className =
+                "validation-error";
+            errorMessage.textContent = message;
+
+            input.parentElement.appendChild(
+                errorMessage
+            );
+        }
+    );
+}
+
+function clearValidationErrors() {
+    document
+        .querySelectorAll(".validation-error")
+        .forEach((element) => element.remove());
+
+    document
+        .querySelectorAll(".input-error")
+        .forEach((element) =>
+            element.classList.remove("input-error")
+        );
+}
+
 if (subscriptionForm) {
+    subscriptionForm.addEventListener(
+        "input",
+        () => {
+            clearValidationErrors();
+        }
+    );
+
+    subscriptionForm.addEventListener(
+        "change",
+        () => {
+            clearValidationErrors();
+        }
+    );
+
     subscriptionForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
         const formData = new FormData(subscriptionForm);
 
-        const subscription = createSubscription({
+        const subscriptionData = {
             name: formData.get("name"),
             category: formData.get("category"),
             price: formData.get("price"),
             billingCycle: formData.get("billingCycle"),
             nextPaymentDate: formData.get("nextPaymentDate"),
             status: formData.get("status")
-        });
+        };
+
+        const validationErrors =
+            validateSubscriptionData(subscriptionData);
+
+        if (Object.keys(validationErrors).length > 0) {
+            displayValidationErrors(validationErrors);
+            return;
+        }
+
+        clearValidationErrors();
+
+        const subscription = createSubscription(
+            subscriptionData
+        );
 
         if (editingSubscriptionId) {
             const index = subscriptions.findIndex(
@@ -607,6 +773,7 @@ if (subscriptionForm) {
         displayMonthlySpending();
         displayYearlySpending();
         displayCategorySpending();
+        displayActiveSubscriptions();
 
         subscriptionForm.reset();
 
