@@ -55,6 +55,7 @@ function deleteSubscription(subscriptionId) {
     saveSubscriptions();
     displayMonthlySpending();
     displayYearlySpending();
+    displayCategorySpending();
 
     if (editingSubscriptionId === subscriptionId && subscriptionForm) {
         editingSubscriptionId = null;
@@ -323,6 +324,31 @@ function calculateYearlySpending() {
     }, 0);
 }
 
+function calculateCategorySpending() {
+    const categorySpending = {};
+
+    subscriptions.forEach((subscription) => {
+        const price = Number(subscription.price);
+        let monthlyCost = 0;
+
+        if (subscription.billingCycle === "weekly") {
+            monthlyCost = price * 52 / 12;
+        } else if (subscription.billingCycle === "monthly") {
+            monthlyCost = price;
+        } else if (subscription.billingCycle === "yearly") {
+            monthlyCost = price / 12;
+        }
+
+        if (!categorySpending[subscription.category]) {
+            categorySpending[subscription.category] = 0;
+        }
+
+        categorySpending[subscription.category] += monthlyCost;
+    });
+
+    return categorySpending;
+}
+
 function displayMonthlySpending() {
     const monthlySpendingValue =
         document.getElementById("monthly-spending-value");
@@ -352,6 +378,54 @@ function displayYearlySpending() {
     yearlySpendingValue.textContent =
         `KSh ${yearlySpending.toFixed(2)}`;
 }
+
+function displayCategorySpending() {
+    const categoryAnalysisList =
+        document.getElementById("category-analysis-list");
+
+    if (!categoryAnalysisList) {
+        return;
+    }
+
+    categoryAnalysisList.innerHTML = "";
+
+    const categorySpending =
+        calculateCategorySpending();
+    const categories =
+        Object.entries(categorySpending)
+            .sort(([, first], [, second]) => second - first);
+
+    if (categories.length === 0) {
+        const emptyMessage =
+            document.createElement("p");
+        emptyMessage.textContent =
+            "No subscription spending data available.";
+        categoryAnalysisList.appendChild(emptyMessage);
+        return;
+    }
+
+    categories.forEach(([category, amount]) => {
+        const item = document.createElement("div");
+        item.className = "category-analysis-item";
+
+        const categoryName =
+            document.createElement("span");
+        categoryName.className =
+            "category-analysis-name";
+        categoryName.textContent = category;
+
+        const categoryAmount =
+            document.createElement("strong");
+        categoryAmount.className =
+            "category-analysis-amount";
+        categoryAmount.textContent =
+            `KSh ${amount.toFixed(2)} / month`;
+
+        item.appendChild(categoryName);
+        item.appendChild(categoryAmount);
+        categoryAnalysisList.appendChild(item);
+    });
+}
 let editingSubscriptionId = null;
 let subscriptionSearchQuery = "";
 let subscriptionFilters = {
@@ -377,6 +451,7 @@ loadSubscriptions();
 displaySubscriptions();
 displayMonthlySpending();
 displayYearlySpending();
+displayCategorySpending();
 
 if (subscriptionSearchInput) {
     subscriptionSearchInput.addEventListener(
@@ -531,6 +606,7 @@ if (subscriptionForm) {
         displaySubscriptions();
         displayMonthlySpending();
         displayYearlySpending();
+        displayCategorySpending();
 
         subscriptionForm.reset();
 
