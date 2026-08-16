@@ -4,7 +4,7 @@ SubTrack is a lightweight web application for tracking recurring subscriptions a
 
 ## Purpose
 
-The goal of SubTrack is to provide a simple, client-side subscription management tool that works directly in the browser without a backend service.
+The goal of SubTrack is to provision a client-side subscription management tool that works directly in the browser without a backend service.
 
 ## Core Functionality
 
