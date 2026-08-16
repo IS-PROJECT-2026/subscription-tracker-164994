@@ -57,30 +57,29 @@ Demonstrate your workflow mechanics by embedding your screenshots below.
 > **CRITICAL FOR WORKING IMAGES:** Do not type manual folder paths. Edit this file directly on the GitHub web interface, click on the blank line below each prompt, and **paste (Ctrl+V / Cmd+V)** your screenshot. GitHub will automatically upload the file and generate a permanent, working image link for you.
 
 ### A. Milestones and Issues
-*Provide a screenshot showing your active milestone(s) and the granular tracking issues linked directly to them.*
-
-[PASTE YOUR MILESTONE SCREENSHOT DIRECTLY HERE]
+<img width="1515" height="735" alt="Screenshot 2026-08-16 095040" src="https://github.com/user-attachments/assets/ddacdc5a-19f5-4204-893f-355b45ef7c08" />
 
 * **Caption:** [Write a brief sentence describing your milestones here]
 
 ### B. Project Board
 *Provide a screenshot of your GitHub Project Board with your issues organized dynamically across columns (To Do, In Progress, Done).*
 
-[PASTE YOUR PROJECT BOARD SCREENSHOT DIRECTLY HERE]
+<img width="1918" height="884" alt="Screenshot 2026-08-16 102141" src="https://github.com/user-attachments/assets/8046e3de-05e8-49e6-b52d-8a9b7cf14237" />
+
 
 * **Caption:** [Write a brief sentence describing your board state here]
 
 ### C. Branching Architecture
 *Provide a screenshot showing your local or remote Git branch list, highlighting your use of conventional, issue-linked naming patterns (e.g., `feat/`, `fix/`, `style/`).*
 
-[PASTE YOUR BRANCHING SCREENSHOT DIRECTLY HERE]
+<img width="1870" height="806" alt="image" src="https://github.com/user-attachments/assets/91ce6125-cd82-4a8f-8d20-b1a9d743fc33" />
 
 * **Caption:** [Write a brief sentence describing your branch list here]
 
 ### D. Pull Requests & Traceability
 *Provide a screenshot of a completed or open Pull Request (PR) on GitHub that clearly shows it is linked to a related development issue.*
 
-[PASTE YOUR PULL REQUEST SCREENSHOT DIRECTLY HERE]
+<img width="1895" height="879" alt="Screenshot 2026-08-16 095543" src="https://github.com/user-attachments/assets/e7837d51-0a3a-4c08-882b-c9e091ebd165" />
 
 * **Caption:** [Write a brief sentence describing your PR and what issue it closes]
 
@@ -101,21 +100,22 @@ You must engineer **three merge conflicts**, each triggered by a **different cau
 #### Step 1: Generating the Clash
 *Screenshot showing the merge attempt and the conflict warning.*
 
-[PASTE SCREENSHOT OF ATTEMPTED MERGE / TERMINAL WARNING HERE]
+<img width="1174" height="205" alt="Screenshot 2026-08-16 105431" src="https://github.com/user-attachments/assets/a19c8b0f-6159-45cf-bf08-f2f920fd8a33" />
 
 * **Caption:** [Describe which two branches collided and the warning received]
 
 #### Step 2: Inside the Code Editor (Conflict Markers)
 *Screenshot showing the raw, unresolved conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>>`) in your editor.*
 
-[PASTE SCREENSHOT OF RAW CONFLICT MARKERS HERE]
+<img width="1262" height="470" alt="Screenshot 2026-08-16 105439" src="https://github.com/user-attachments/assets/0e3a3f67-d171-491f-9032-b9871c6390fc" />
 
 * **Caption:** [Explain what caused the dispute and your reasoning for the final version]
 
 #### Step 3: Resolution & Clean Merge
 *Screenshot of your clean Git history or completed PR showing the conflict was resolved and merged.*
 
-[PASTE SCREENSHOT OF CLEAN RESOLUTION HERE]
+<img width="1891" height="889" alt="image" src="https://github.com/user-attachments/assets/13bccf1c-313b-455a-9255-f50666907744" />
+
 
 * **Caption:** [Describe the final state after resolution]
 
@@ -127,7 +127,7 @@ You must engineer **three merge conflicts**, each triggered by a **different cau
 
 **Why does this cause trigger a conflict?** [1–2 sentences explaining the mechanism]
 
-[PASTE SCREENSHOT OF CONFLICT MARKERS FOR CONFLICT 2 HERE]
+<img width="1317" height="153" alt="Screenshot 2026-08-16 111853" src="https://github.com/user-attachments/assets/8cab4198-653d-42dc-b94f-95999d4dd658" />
 
 * **Caption:** [Brief description of the conflicting branches and file]
 
@@ -139,7 +139,8 @@ You must engineer **three merge conflicts**, each triggered by a **different cau
 
 **Why does this cause trigger a conflict?** [1–2 sentences explaining the mechanism]
 
-[PASTE SCREENSHOT OF CONFLICT MARKERS FOR CONFLICT 3 HERE]
+<img width="1306" height="101" alt="Screenshot 2026-08-16 115325" src="https://github.com/user-attachments/assets/aecb1bd0-af81-496b-a4c5-0f18e201c529" />
+
 
 * **Caption:** [Brief description of the conflicting branches and file]
 
