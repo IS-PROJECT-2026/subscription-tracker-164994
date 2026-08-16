@@ -59,7 +59,7 @@ Demonstrate your workflow mechanics by embedding your screenshots below.
 ### A. Milestones and Issues
 <img width="1515" height="735" alt="Screenshot 2026-08-16 095040" src="https://github.com/user-attachments/assets/ddacdc5a-19f5-4204-893f-355b45ef7c08" />
 
-* **Caption:** [Write a brief sentence describing your milestones here]
+* **Caption:** The project was planned in three milestones (Foundation & Dashboard UI, Subscription Management, and Analytics/Polish/Deployment), each broken down into linked task issues.
 
 ### B. Project Board
 *Provide a screenshot of your GitHub Project Board with your issues organized dynamically across columns (To Do, In Progress, Done).*
@@ -67,21 +67,21 @@ Demonstrate your workflow mechanics by embedding your screenshots below.
 <img width="1918" height="884" alt="Screenshot 2026-08-16 102141" src="https://github.com/user-attachments/assets/8046e3de-05e8-49e6-b52d-8a9b7cf14237" />
 
 
-* **Caption:** [Write a brief sentence describing your board state here]
+* **Caption:** The board shows tasks moving through To Do, In Progress, and Done to reflect active workflow progression instead of bulk-closing at the end.
 
 ### C. Branching Architecture
 *Provide a screenshot showing your local or remote Git branch list, highlighting your use of conventional, issue-linked naming patterns (e.g., `feat/`, `fix/`, `style/`).*
 
 <img width="1870" height="806" alt="image" src="https://github.com/user-attachments/assets/91ce6125-cd82-4a8f-8d20-b1a9d743fc33" />
 
-* **Caption:** [Write a brief sentence describing your branch list here]
+* **Caption:** The branch list follows issue-linked naming patterns across feat/fix/style/chore/refactor work, showing branch isolation for each task.
 
 ### D. Pull Requests & Traceability
 *Provide a screenshot of a completed or open Pull Request (PR) on GitHub that clearly shows it is linked to a related development issue.*
 
 <img width="1895" height="879" alt="Screenshot 2026-08-16 095543" src="https://github.com/user-attachments/assets/e7837d51-0a3a-4c08-882b-c9e091ebd165" />
 
-* **Caption:** [Write a brief sentence describing your PR and what issue it closes]
+* **Caption:** The PR traceability view shows issue-linked pull requests that were reviewed and merged to close their related tasks.
 
 ---
 
@@ -95,21 +95,21 @@ You must engineer **three merge conflicts**, each triggered by a **different cau
 
 ### Conflict 1 — Full Chronology
 
-**What cause did you use?** [Name the type of conflict cause from the lecture]
+**What cause did you use?** Same-line content edit conflict (both branches changed the same README line differently).
 
 #### Step 1: Generating the Clash
 *Screenshot showing the merge attempt and the conflict warning.*
 
 <img width="1174" height="205" alt="Screenshot 2026-08-16 105431" src="https://github.com/user-attachments/assets/a19c8b0f-6159-45cf-bf08-f2f920fd8a33" />
 
-* **Caption:** [Describe which two branches collided and the warning received]
+* **Caption:** Branches `feat/ISSUE1-conflict1-a` and `feat/ISSUE1-conflict1-b` collided when both edited the same Purpose sentence in `README.md`, producing a content conflict warning.
 
 #### Step 2: Inside the Code Editor (Conflict Markers)
 *Screenshot showing the raw, unresolved conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>>`) in your editor.*
 
 <img width="1262" height="470" alt="Screenshot 2026-08-16 105439" src="https://github.com/user-attachments/assets/0e3a3f67-d171-491f-9032-b9871c6390fc" />
 
-* **Caption:** [Explain what caused the dispute and your reasoning for the final version]
+* **Caption:** The dispute happened because both branches changed the same line in different ways, so I manually kept one final clear sentence and removed all markers.
 
 #### Step 3: Resolution & Clean Merge
 *Screenshot of your clean Git history or completed PR showing the conflict was resolved and merged.*
@@ -117,32 +117,32 @@ You must engineer **three merge conflicts**, each triggered by a **different cau
 <img width="1891" height="889" alt="image" src="https://github.com/user-attachments/assets/13bccf1c-313b-455a-9255-f50666907744" />
 
 
-* **Caption:** [Describe the final state after resolution]
+* **Caption:** After resolving the line conflict, the branch was committed, pushed, and merged cleanly through PR with a normal history.
 
 ---
 
 ### Conflict 2 — Different Cause
 
-**What cause did you use?** [Name the type of conflict cause — must be different from Conflict 1]
+**What cause did you use?** Rename/Rename conflict.
 
-**Why does this cause trigger a conflict?** [1–2 sentences explaining the mechanism]
+**Why does this cause trigger a conflict?** This conflict occurs when two branches rename the same source file to different target names. Git cannot infer which target path is correct, so manual resolution is required.
 
 <img width="1317" height="153" alt="Screenshot 2026-08-16 111853" src="https://github.com/user-attachments/assets/8cab4198-653d-42dc-b94f-95999d4dd658" />
 
-* **Caption:** [Brief description of the conflicting branches and file]
+* **Caption:** The conflicting branches renamed `evidence/rename_source_45.txt` to different filenames, which produced a rename/rename merge conflict.
 
 ---
 
 ### Conflict 3 — Different Cause
 
-**What cause did you use?** [Name the type of conflict cause — must be different from Conflicts 1 and 2]
+**What cause did you use?** Add/Add conflict.
 
-**Why does this cause trigger a conflict?** [1–2 sentences explaining the mechanism]
+**Why does this cause trigger a conflict?** This conflict occurs when both branches add the same file path but with different text content. Git cannot automatically choose one version, so the file must be resolved manually.
 
 <img width="1306" height="101" alt="Screenshot 2026-08-16 115325" src="https://github.com/user-attachments/assets/aecb1bd0-af81-496b-a4c5-0f18e201c529" />
 
 
-* **Caption:** [Brief description of the conflicting branches and file]
+* **Caption:** Both branches added the same target file with different text, triggering an add/add conflict that was manually resolved before merge.
 
 ---
 ##
