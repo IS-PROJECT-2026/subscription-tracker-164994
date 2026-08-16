@@ -14,7 +14,7 @@ const el = {
     navLinks: document.querySelectorAll(".nav-link"),
     sections: document.querySelectorAll(".page-section"),
     form: document.getElementById("subscription-form"),
-    grid: document.getElementById("subscription-grid"),
+    subscriptionGrids: document.querySelectorAll("[data-subscription-grid]"),
     categoryList: document.getElementById("category-analysis-list"),
     cancelEditButton: document.getElementById("cancel-edit-button"),
     monthlyValue: document.getElementById("monthly-spending-value"),
@@ -258,7 +258,7 @@ function matchesFilters(sub) {
 }
 
 function renderSubscriptions() {
-    if (!el.grid) {
+    if (!el.subscriptionGrids.length) {
         return;
     }
 
@@ -269,11 +269,14 @@ function renderSubscriptions() {
             ? `No subscriptions found for "${escapeHtml(state.search)}".`
             : "No subscriptions added yet.";
 
-        el.grid.innerHTML = `<p class="subscription-search-empty">${message}</p>`;
+        const emptyHtml = `<p class="subscription-search-empty">${message}</p>`;
+        el.subscriptionGrids.forEach((grid) => {
+            grid.innerHTML = emptyHtml;
+        });
         return;
     }
 
-    el.grid.innerHTML = filtered.map((sub, index) => {
+    const cardsHtml = filtered.map((sub, index) => {
         const upcomingClass = isUpcomingPayment(sub.nextPaymentDate) ? " upcoming-payment" : "";
 
         return `
@@ -300,6 +303,10 @@ function renderSubscriptions() {
             </article>
         `;
     }).join("");
+
+    el.subscriptionGrids.forEach((grid) => {
+        grid.innerHTML = cardsHtml;
+    });
 }
 
 function renderCategorySpending() {
@@ -471,11 +478,7 @@ function bindFilters() {
 }
 
 function bindSubscriptionActions() {
-    if (!el.grid) {
-        return;
-    }
-
-    el.grid.addEventListener("click", (event) => {
+    document.addEventListener("click", (event) => {
         const button = event.target.closest("button[data-action]");
 
         if (!button) {
